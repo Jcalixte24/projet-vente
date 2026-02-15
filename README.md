@@ -1,28 +1,43 @@
-lib/
-├── config/                  # Les réglages globaux
-│   ├── theme.dart           # Tes couleurs (Violet), polices
-│   └── constants.dart       # Textes fixes, clés API
-│
-├── models/                  # Les "Patrons" de données (La structure)
-│   ├── user_model.dart      # id, phone, nom...
-│   ├── product_model.dart   # id, prix, image...
-│   └── cart_item_model.dart # produit + quantité
-│
-├── screens/                 # Les pages complètes
-│   ├── auth/                # Dossier Authentification
-│   │   ├── login_screen.dart
-│   │   └── signup_screen.dart
-│   ├── home/                # Dossier Accueil
-│   │   └── home_screen.dart
-│   ├── product/             # Dossier Produit
-│   │   └── product_detail_screen.dart
-│   ├── cart/                # Dossier Panier & Caisse
-│   │   ├── cart_screen.dart
-│   │   └── checkout_screen.dart
-│   └── admin/               # Dossier Administrateur (Back-office)
-│       └── add_product_screen.dart
-│
-├── widgets/                 # Les petits bouts réutilisables
-│   ├── common/              # Boutons, Champs de texte
-│   │   ├── custom_button.dart
-│   │   └── custom_textfield
+# Flutter E-commerce App - Frontend v1
+
+Une application e-commerce mobile-first conçue pour le marché ivoirien, avec une interface utilisateur moderne et une expérience fluide pour les acheteurs et les vendeurs.
+
+## 🚀 Fonctionnalités (Frontend v1)
+
+### 🛍️ Pour les Acheteurs
+- **Navigation Intuitive** : Accueil avec catégories, bannières promotionnelles et produits en vedette.
+- **Liste des Boutiques** : Annuaire des boutiques partenaires avec filtres par catégorie.
+- **Détails Produit** : Carrousel d'images, sélection de taille/couleur, et description extensible.
+- **Panier Optimisé** : Regroupement des articles par vendeur, code promo, et estimation des frais de livraison.
+- **Validation de Commande** : Parcours de commande en 2 étapes (Livraison & Paiement) avec support des moyens de paiement locaux (Wave, Orange Money, MTN, etc.).
+
+### 🏪 Pour les Vendeurs (Dashboard)
+- **Tableau de Bord** : Vue d'ensemble des ventes et statistiques clés.
+- **Gestion des Commandes** : Suivi des commandes (En attente, En préparation, Livré).
+- **Gestion du Stock** : Inventaire complet avec filtres (En stock, Rupture, Archivés) et mise à jour rapide.
+- **Profil Boutique** : Gestion des informations de la boutique, horaires et zones de livraison.
+- **Ajout de Produit** : Formulaire complet pour ajouter de nouveaux articles.
+
+## 🛠️ Stack Technique
+- **Framework** : Flutter (Dart)
+- **Architecture** : Feature-based folder structure
+- **State Management** : Provider
+- **UI** : Material Design 3 avec une palette de couleurs personnalisée (Violet/Vert).
+
+## 📦 Installation
+
+1.  Cloner le dépôt :
+    ```bash
+    git clone https://github.com/votre-repo/flutter-ecommerce.git
+    ```
+2.  Installer les dépendances :
+    ```bash
+    flutter pub get
+    ```
+3.  Lancer l'application :
+    ```bash
+    flutter run -d chrome
+    ```
+
+## 📝 Auteur
+Développé avec ❤️ par Vibecoding.
