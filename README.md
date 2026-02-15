@@ -1,17 +1,28 @@
-# flutter_application_1
-
-A new Flutter project.
-
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+lib/
+├── config/                  # Les réglages globaux
+│   ├── theme.dart           # Tes couleurs (Violet), polices
+│   └── constants.dart       # Textes fixes, clés API
+│
+├── models/                  # Les "Patrons" de données (La structure)
+│   ├── user_model.dart      # id, phone, nom...
+│   ├── product_model.dart   # id, prix, image...
+│   └── cart_item_model.dart # produit + quantité
+│
+├── screens/                 # Les pages complètes
+│   ├── auth/                # Dossier Authentification
+│   │   ├── login_screen.dart
+│   │   └── signup_screen.dart
+│   ├── home/                # Dossier Accueil
+│   │   └── home_screen.dart
+│   ├── product/             # Dossier Produit
+│   │   └── product_detail_screen.dart
+│   ├── cart/                # Dossier Panier & Caisse
+│   │   ├── cart_screen.dart
+│   │   └── checkout_screen.dart
+│   └── admin/               # Dossier Administrateur (Back-office)
+│       └── add_product_screen.dart
+│
+├── widgets/                 # Les petits bouts réutilisables
+│   ├── common/              # Boutons, Champs de texte
+│   │   ├── custom_button.dart
+│   │   └── custom_textfield

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-
-import 'screens/login_screen.dart'; 
+// Note bien le chemin : features/auth/screens/
+import 'features/auth/screens/splash_screen.dart'; 
 
 void main() {
   runApp(const MyApp());
@@ -12,15 +12,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'La Casa Bismark',
-      debugShowCheckedModeBanner: false, // Enlève le bandeau "Debug" rouge en haut à droite
+      title: 'IvoireMode',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // Définit la couleur principale (Violet) pour toute l'application
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF7F13EC)),
         useMaterial3: true,
       ),
-      // C'est ici qu'on dit à l'appli de démarrer sur la page de connexion
-      home: const LoginScreen(), 
+      home: const SplashScreen(),
     );
   }
 }
