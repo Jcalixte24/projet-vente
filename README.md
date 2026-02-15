@@ -24,7 +24,23 @@ Une application e-commerce mobile-first conçue pour le marché ivoirien, avec u
 - **State Management** : Provider
 - **UI** : Material Design 3 avec une palette de couleurs personnalisée (Violet/Vert).
 
-## 📦 Installation
+## � Architecture du Projet
+
+Le projet suit une architecture **Feature-First** (par fonctionnalité) pour une meilleure scalabilité :
+
+```
+lib/
+├── config/             # Configuration globale (Thèmes, Constants)
+├── features/           # Fonctionnalités modules
+│   ├── admin/          # Gestion vendeurs (Dashboard, Stock, Commandes)
+│   ├── auth/           # Authentification (Login, Signup)
+│   ├── shop/           # Boutique client (Accueil, Panier, Checkout)
+│   └── shared/         # Widgets et modèles partagés
+├── main.dart           # Point d'entrée
+└── ...
+```
+
+## �📦 Installation
 
 1.  Cloner le dépôt :
     ```bash
@@ -40,4 +56,4 @@ Une application e-commerce mobile-first conçue pour le marché ivoirien, avec u
     ```
 
 ## 📝 Auteur
-Développé avec ❤️ par Vibecoding.
+*
