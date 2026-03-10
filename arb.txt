@@ -1,0 +1,91 @@
+projet-vente/
+│
+├── 📄 pubspec.yaml
+├── 📄 pubspec.lock
+├── 📄 analysis_options.yaml
+├── 📄 README.md
+│
+├── 📁 assets/
+│   └── 📁 images/
+│
+├── 📁 android/
+├── 📁 ios/
+├── 📁 web/
+├── 📁 linux/
+├── 📁 macos/
+├── 📁 windows/
+├── 📁 test/
+│
+└── 📁 lib/
+    │
+    ├── 📄 main.dart                          🆕 [mis à jour — 18 routes + MultiProvider]
+    │
+    ├── 📁 config/                            🆕 [nouveau dossier]
+    │   ├── 📄 app_theme.dart                 🆕 [Thème Material 3, couleurs CI]
+    │   └── 📄 constants.dart                 🆕 [Routes, zones livraison, paiements, catégories]
+    │
+    └── 📁 features/
+        │
+        ├── 📁 auth/
+        │   └── 📁 screens/
+        │       ├── 📄 splash_screen.dart     ✅
+        │       ├── 📄 welcome_screen.dart    ✅
+        │       ├── 📄 login_screen.dart      ✅
+        │       ├── 📄 signup_screen.dart     🆕 [Inscription acheteur/vendeur]
+        │       └── 📄 shop_setup_screen.dart ✅
+        │
+        ├── 📁 shop/
+        │   ├── 📁 screens/
+        │   │   ├── 📄 home_screen.dart                    ✅
+        │   │   ├── 📄 catalog_screen.dart                 ✅
+        │   │   ├── 📄 product_detail_screen.dart          ✅
+        │   │   ├── 📄 cart_screen.dart                    ✅
+        │   │   ├── 📄 checkout_screen.dart                ✅
+        │   │   ├── 📄 favorites_screen.dart               ✅
+        │   │   ├── 📄 profile_screen.dart                 ✅
+        │   │   ├── 📄 shop_list_screen.dart               ✅
+        │   │   ├── 📄 search_screen.dart                  🆕 [Recherche + tendances + historique]
+        │   │   ├── 📄 order_history_screen.dart           🆕 [Historique 4 onglets]
+        │   │   ├── 📄 order_tracking_screen.dart          🆕 [Suivi temps réel animé]
+        │   │   ├── 📄 payment_confirmation_screen.dart    🆕 [Confirmation mobile money]
+        │   │   └── 📄 notifications_screen.dart           🆕 [Centre notifications]
+        │   │
+        │   ├── 📁 models/
+        │   │   ├── 📄 cart_item.dart                      ✅
+        │   │   └── 📄 models.dart                         🆕 [Product, Order, User, Notification]
+        │   │
+        │   ├── 📁 providers/
+        │   │   └── 📄 cart_provider.dart                  ✅
+        │   │
+        │   └── 📁 services/                               🆕 [nouveau dossier]
+        │       └── 📄 api_services.dart                   🆕 [6 services HTTP → backend]
+        │
+        ├── 📁 admin/
+        │   └── 📁 screens/
+        │       ├── 📄 seller_dashboard_screen.dart        ✅
+        │       ├── 📄 sales_dashboard_screen.dart         ✅
+        │       ├── 📄 orders_screen.dart                  ✅
+        │       ├── 📄 stock_screen.dart                   ✅
+        │       ├── 📄 add_product_screen.dart             ✅
+        │       ├── 📄 product_success_screen.dart         ✅
+        │       └── 📄 shop_profile_screen.dart            ✅
+        │
+        └── 📁 shared/                                     🆕 [nouveau dossier]
+            └── 📁 widgets/
+                └── 📄 app_widgets.dart                    🆕 [Widgets réutilisables]
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  LÉGENDE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✅  Existant dans le repo d'origine
+  🆕  Ajouté / créé dans cette session
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  BILAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Total fichiers Dart  :  33
+  ✅ Existants         :  21
+  🆕 Ajoutés           :  12
+  📁 Nouveaux dossiers :   3  (config/, services/, shared/)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
