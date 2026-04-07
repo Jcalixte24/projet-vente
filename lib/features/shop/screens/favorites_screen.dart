@@ -254,11 +254,11 @@ class FavoritesScreen extends StatelessWidget {
                               double price = double.tryParse(cleanPrice) ?? 0.0;
 
                               cart.addItem(
-                                item['name'],
-                                item['name'],
-                                item['brand'] ?? "Unknown",
-                                price,
-                                item['image'],
+                                productId: item['id'] ?? item['name'],
+                                name: item['name'],
+                                brand: item['brand'] ?? 'Unknown',
+                                price: price,
+                                image: item['image'] ?? '',
                               );
 
                               ScaffoldMessenger.of(context).showSnackBar(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/cart_provider.dart';
+import '../services/api_services.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
@@ -11,9 +13,26 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final _formKey = GlobalKey<FormState>();
-  int _currentStep = 0; // 0: Delivery, 1: Payment
+  int _currentStep = 0;
   String _selectedPaymentMethod = 'Wave';
   String? _selectedCommune;
+  bool _isSubmitting = false;
+
+  // Mapping commune → zone ID
+  static const Map<String, String> _communeToZone = {
+    'Cocody': 'abj-centre', 'Plateau': 'abj-centre',
+    'Yopougon': 'abj-ouest', 'Abobo': 'abj-nord', 'Anyama': 'abj-nord',
+    'Marcory': 'abj-sud', 'Koumassi': 'abj-sud', 'Treichville': 'abj-sud',
+    'Adjamé': 'abj-centre', 'Port-Bouët': 'abj-sud',
+    'Songon': 'abj-ouest', 'Bingerville': 'abj-centre',
+  };
+
+  static const Map<String, int> _communeFees = {
+    'Cocody': 1500, 'Plateau': 1500, 'Adjamé': 1500, 'Bingerville': 1500,
+    'Marcory': 2000, 'Koumassi': 2000, 'Treichville': 2000, 'Port-Bouët': 2000,
+    'Abobo': 2000, 'Anyama': 2000,
+    'Yopougon': 2500, 'Songon': 2500,
+  };
 
   // Form controllers
   final _phoneController = TextEditingController(text: "+225 ");
@@ -103,8 +122,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text("Total à payer", style: TextStyle(fontSize: 16)),
-                      Text(
-                        "${(Provider.of<CartProvider>(context).totalAmount + 1500).toStringAsFixed(0)} FCFA",
+                        Text(
+                        '${Provider.of<CartProvider>(context).totalWithDelivery((_communeFees[_selectedCommune] ?? 2000).toDouble()).toStringAsFixed(0)} FCFA',
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF6200EE)),
                       ),
                     ],
@@ -233,7 +252,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                  children: [
                    const Text("Sous-total", style: TextStyle(color: Colors.grey)),
-                   Text("${cart.totalAmount.toStringAsFixed(0)} FCFA", style: const TextStyle(fontWeight: FontWeight.bold)),
+                   Text("${cart.subtotal.toStringAsFixed(0)} FCFA", style: const TextStyle(fontWeight: FontWeight.bold)),
                  ],
                ),
                const SizedBox(height: 8),
@@ -385,8 +404,25 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     }
   }
 
-  void _confirmOrder() {
-     showDialog(
+  Future<void> _confirmOrder() async {
+    final cart = Provider.of<CartProvider>(context, listen: false);
+    setState(() => _isSubmitting = true);
+
+    try {
+      final order = await OrderService.createOrder(
+        items: cart.toOrderItems(),
+        deliveryZone: _communeToZone[_selectedCommune] ?? 'abj-centre',
+        deliveryAddress:
+            '$_selectedCommune • ${_precisionController.text.trim()}',
+        paymentMethod: _selectedPaymentMethod.toLowerCase(),
+        paymentPhone: _phoneController.text.trim(),
+        promoCode: cart.appliedPromoCode,
+      );
+
+      if (!mounted) return;
+      cart.clear();
+
+      showDialog(
         context: context,
         barrierDismissible: false,
         builder: (ctx) => AlertDialog(
@@ -396,29 +432,50 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             children: [
               Container(
                 padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(color: Colors.green[50], shape: BoxShape.circle),
+                decoration: BoxDecoration(
+                    color: Colors.green[50], shape: BoxShape.circle),
                 child: const Icon(Icons.check, color: Colors.green, size: 40),
               ),
-              const SizedBox(height: 24),
-              const Text("Commande Confirmée !", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 20),
+              const Text('Commande Confirmée !',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
-              const Text("Votre commande a été enregistrée avec succès.", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey)),
+              Text('N° ${order.id}',
+                  style: const TextStyle(
+                      color: Color(0xFF6200EE), fontWeight: FontWeight.bold)),
+              const SizedBox(height: 6),
+              Text(
+                'Votre commande de ${order.total.toStringAsFixed(0)} FCFA a été enregistrée.',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: Colors.grey),
+              ),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: () {
-                     // Clear cart and go home
-                     Provider.of<CartProvider>(context, listen: false).clear();
-                     Navigator.of(context).popUntil((route) => route.isFirst);
-                  },
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00C853), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+                  onPressed: () =>
+                      Navigator.of(context).popUntil((r) => r.isFirst),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF00C853),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                  ),
                   child: const Text("Retourner à l'accueil"),
                 ),
-              )
+              ),
             ],
           ),
         ),
       );
+    } on ApiException catch (e) {
+      if (mounted) AppSnackBar.showError(context, e.message);
+    } catch (_) {
+      if (mounted) {
+        AppSnackBar.showError(
+            context, 'Erreur réseau. Vérifiez votre connexion et réessayez.');
+      }
+    } finally {
+      if (mounted) setState(() => _isSubmitting = false);
+    }
   }
 }

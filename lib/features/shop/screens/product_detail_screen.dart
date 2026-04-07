@@ -344,18 +344,51 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 height: 50,
                 child: ElevatedButton.icon(
                   onPressed: () {
+                    final rawPrice = widget.product['price']?.toString() ?? '0';
+                    final price = double.tryParse(
+                            rawPrice.replaceAll(RegExp(r'[^0-9]'), '')) ??
+                        0.0;
+                    final selectedSize = sizes.isNotEmpty
+                        ? sizes[_selectedSizeIndex.clamp(0, sizes.length - 1)]
+                        : null;
+                    final colorNames = ['Violet', 'Camel', 'Vert Foncé'];
+                    final selectedColor = colorNames.isNotEmpty
+                        ? colorNames[_selectedColorIndex.clamp(0, colorNames.length - 1)]
+                        : null;
                     cart.addItem(
-                      widget.product['name'],
-                      widget.product['name'],
-                      widget.product['brand'] ?? "Unknown",
-                      double.parse(widget.product['price'].replaceAll(RegExp(r'[^0-9]'), '')),
-                      widget.product['image'],
+                      productId: widget.product['id'] ?? widget.product['name'],
+                      name: widget.product['name'],
+                      brand: widget.product['brand'] ?? 'Unknown',
+                      price: price,
+                      image: widget.product['image'] ?? '',
+                      selectedSize: selectedSize,
+                      selectedColor: selectedColor,
                     );
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text("${widget.product['name']} ajouté au panier"),
+                        content: Row(children: [
+                          const Icon(Icons.check_circle_outline,
+                              color: Colors.white, size: 18),
+                          const SizedBox(width: 10),
+                          Expanded(
+                              child: Text(
+                                  '${widget.product['name']} ajouté au panier !')),
+                        ]),
                         backgroundColor: const Color(0xFF6200EE),
-                      )
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                        margin: const EdgeInsets.all(12),
+                        action: SnackBarAction(
+                          label: 'Voir',
+                          textColor: Colors.white,
+                          onPressed: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const CartScreen()),
+                          ),
+                        ),
+                      ),
                     );
                   },
                   icon: const Icon(Icons.shopping_bag_outlined),

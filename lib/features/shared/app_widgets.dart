@@ -373,3 +373,205 @@ void showAppBottomSheet(BuildContext context, {required Widget child, String? ti
     ),
   );
 }
+
+
+// ─── EMPTY STATE WIDGET ────────────────────────────────────────────────────────
+class EmptyStateWidget extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String? actionLabel;
+  final VoidCallback? onAction;
+
+  const EmptyStateWidget({
+    super.key,
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    this.actionLabel,
+    this.onAction,
+  });
+
+  // Constructeurs nommés pour les cas courants
+  factory EmptyStateWidget.cart({VoidCallback? onShop}) => EmptyStateWidget(
+        icon: Icons.shopping_cart_outlined,
+        title: 'Votre panier est vide',
+        subtitle: 'Ajoutez des articles pour commencer vos achats.',
+        actionLabel: 'Parcourir la boutique',
+        onAction: onShop,
+      );
+
+  factory EmptyStateWidget.orders({VoidCallback? onShop}) => EmptyStateWidget(
+        icon: Icons.receipt_long_outlined,
+        title: 'Aucune commande',
+        subtitle: 'Vous n\'avez pas encore passé de commande.',
+        actionLabel: 'Commencer mes achats',
+        onAction: onShop,
+      );
+
+  factory EmptyStateWidget.favorites({VoidCallback? onShop}) => EmptyStateWidget(
+        icon: Icons.favorite_border,
+        title: 'Aucun favori',
+        subtitle: 'Appuyez sur ♡ sur un article pour l\'ajouter à vos favoris.',
+        actionLabel: 'Découvrir des articles',
+        onAction: onShop,
+      );
+
+  factory EmptyStateWidget.search() => const EmptyStateWidget(
+        icon: Icons.search_off_outlined,
+        title: 'Aucun résultat',
+        subtitle: 'Essayez d\'autres mots-clés ou consultez nos catégories.',
+      );
+
+  factory EmptyStateWidget.notifications() => const EmptyStateWidget(
+        icon: Icons.notifications_none_outlined,
+        title: 'Pas de notifications',
+        subtitle: 'Vous serez notifié ici du suivi de vos commandes et promos.',
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 72, color: Colors.grey.shade300),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500, height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+            if (actionLabel != null && onAction != null) ...[
+              const SizedBox(height: 28),
+              ElevatedButton(
+                onPressed: onAction,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6200EE),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                child: Text(actionLabel!, style: const TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── ERROR STATE WIDGET (erreur réseau) ───────────────────────────────────────
+class ErrorStateWidget extends StatelessWidget {
+  final String message;
+  final VoidCallback? onRetry;
+
+  const ErrorStateWidget({
+    super.key,
+    this.message = 'Une erreur est survenue. Vérifiez votre connexion.',
+    this.onRetry,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.wifi_off_rounded, size: 64, color: Colors.red.shade200),
+            const SizedBox(height: 20),
+            const Text(
+              'Problème de connexion',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: TextStyle(color: Colors.grey.shade500, height: 1.5),
+              textAlign: TextAlign.center,
+            ),
+            if (onRetry != null) ...[
+              const SizedBox(height: 24),
+              OutlinedButton.icon(
+                onPressed: onRetry,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Réessayer'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF6200EE),
+                  side: const BorderSide(color: Color(0xFF6200EE)),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── SNACKBAR HELPERS ─────────────────────────────────────────────────────────
+class AppSnackBar {
+  static void showError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(children: [
+          const Icon(Icons.error_outline, color: Colors.white, size: 18),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
+        ]),
+        backgroundColor: Colors.red.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12),
+        duration: const Duration(seconds: 4),
+      ),
+    );
+  }
+
+  static void showSuccess(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(children: [
+          const Icon(Icons.check_circle_outline, color: Colors.white, size: 18),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
+        ]),
+        backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  static void showInfo(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(children: [
+          const Icon(Icons.info_outline, color: Colors.white, size: 18),
+          const SizedBox(width: 10),
+          Expanded(child: Text(message, style: const TextStyle(color: Colors.white))),
+        ]),
+        backgroundColor: const Color(0xFF6200EE),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(12),
+      ),
+    );
+  }
+}

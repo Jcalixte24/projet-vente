@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../config/constants.dart';
 import '../models/models.dart';
+import '../services/api_services.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -11,68 +13,33 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  List<AppNotification> _notifications = _mockNotifications();
+  List<AppNotification> _notifications = [];
+  bool _isLoading = true;
 
-  static List<AppNotification> _mockNotifications() {
-    final now = DateTime.now();
-    return [
-      AppNotification(
-        id: 'n1', title: '🚚 Commande en transit',
-        body: 'Votre commande CMD-2025-0038 est en route pour Yamoussoukro.',
-        type: 'order', orderId: 'CMD-2025-0038', isRead: false,
-        createdAt: now.subtract(const Duration(hours: 2)),
-      ),
-      AppNotification(
-        id: 'n2', title: '✅ Paiement confirmé',
-        body: 'Votre paiement de 55 500 F CFA via Wave a été reçu.',
-        type: 'payment', orderId: 'CMD-2025-0038', isRead: false,
-        createdAt: now.subtract(const Duration(hours: 3)),
-      ),
-      AppNotification(
-        id: 'n3', title: '📦 Commande en préparation',
-        body: 'Le vendeur Kôkô Boutique prépare votre commande CMD-2025-0031.',
-        type: 'order', orderId: 'CMD-2025-0031', isRead: false,
-        createdAt: now.subtract(const Duration(hours: 6)),
-      ),
-      AppNotification(
-        id: 'n4', title: '🎉 Livraison réussie !',
-        body: 'Votre commande CMD-2025-0042 a bien été livrée. Donnez votre avis !',
-        type: 'order', orderId: 'CMD-2025-0042', isRead: true,
-        createdAt: now.subtract(const Duration(days: 3)),
-      ),
-      AppNotification(
-        id: 'n5', title: '🔥 Promotion du jour',
-        body: '-20% sur tous les tissus wax jusqu\'à ce soir minuit.',
-        type: 'promo', isRead: true,
-        createdAt: now.subtract(const Duration(days: 4)),
-      ),
-      AppNotification(
-        id: 'n6', title: '⭐ Évaluez votre achat',
-        body: 'Comment s\'est passée votre commande de Caftan Brodé ?',
-        type: 'system', orderId: 'CMD-2025-0042', isRead: true,
-        createdAt: now.subtract(const Duration(days: 5)),
-      ),
-    ];
+  @override
+  void initState() {
+    super.initState();
+    _loadNotifications();
+  }
+
+  Future<void> _loadNotifications() async {
+    setState(() => _isLoading = true);
+    final notifs = await NotificationService.getNotifications();
+    if (mounted) setState(() { _notifications = notifs; _isLoading = false; });
   }
 
   int get _unreadCount => _notifications.where((n) => !n.isRead).length;
 
-  void _markAllRead() {
-    setState(() {
-      _notifications = _notifications.map((n) => AppNotification(
-        id: n.id, title: n.title, body: n.body, type: n.type,
-        orderId: n.orderId, isRead: true, createdAt: n.createdAt,
-      )).toList();
-    });
+  Future<void> _markAllRead() async {
+    await NotificationService.markAllRead();
+    final notifs = await NotificationService.getNotifications();
+    if (mounted) setState(() => _notifications = notifs);
   }
 
-  void _markRead(String id) {
-    setState(() {
-      _notifications = _notifications.map((n) => n.id == id
-          ? AppNotification(id: n.id, title: n.title, body: n.body,
-              type: n.type, orderId: n.orderId, isRead: true, createdAt: n.createdAt)
-          : n).toList();
-    });
+  Future<void> _markRead(String id) async {
+    await NotificationService.markRead(id);
+    final notifs = await NotificationService.getNotifications();
+    if (mounted) setState(() => _notifications = notifs);
   }
 
   void _delete(String id) {
@@ -81,6 +48,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator(color: Color(0xFF6200EE))),
+      );
+    }
     final recent = _notifications.where((n) =>
         n.createdAt.isAfter(DateTime.now().subtract(const Duration(days: 1)))).toList();
     final older = _notifications.where((n) =>

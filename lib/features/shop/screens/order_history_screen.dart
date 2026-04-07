@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '../../../config/app_theme.dart';
 import '../../../config/constants.dart';
 import '../models/models.dart';
+import '../services/api_services.dart';
+import '../../shared/widgets/app_widgets.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});
@@ -14,90 +16,9 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
-  // Données simulées
-  final List<Order> _orders = _mockOrders();
-
-  static List<Order> _mockOrders() {
-    final now = DateTime.now();
-    return [
-      Order(
-        id: 'CMD-2025-0042',
-        userId: 'u1',
-        items: [
-          const OrderItem(productId: 'p1', productName: 'Tissu Wax Premium',
-              productImage: '🧵', price: 8500, quantity: 2),
-          const OrderItem(productId: 'p2', productName: 'Huile de Karité',
-              productImage: '🫙', price: 4500, quantity: 1),
-        ],
-        status: OrderStatus.delivered,
-        subtotal: 21500,
-        deliveryFee: 1500,
-        total: 23000,
-        deliveryZone: 'Abidjan Centre',
-        deliveryAddress: 'Cocody, Riviera 3, Rue des Jardins',
-        paymentMethod: 'Orange Money',
-        paymentPhone: '+225 07 11 22 33 44',
-        transactionId: 'OM-2025-ABC123',
-        createdAt: now.subtract(const Duration(days: 5)),
-        estimatedDelivery: now.subtract(const Duration(days: 3)),
-        statusHistory: [
-          OrderStatusUpdate(status: OrderStatus.pending, timestamp: now.subtract(const Duration(days: 5))),
-          OrderStatusUpdate(status: OrderStatus.preparing, timestamp: now.subtract(const Duration(days: 4, hours: 20))),
-          OrderStatusUpdate(status: OrderStatus.shipped, timestamp: now.subtract(const Duration(days: 4))),
-          OrderStatusUpdate(status: OrderStatus.delivered, timestamp: now.subtract(const Duration(days: 3))),
-        ],
-      ),
-      Order(
-        id: 'CMD-2025-0038',
-        userId: 'u1',
-        items: [
-          const OrderItem(productId: 'p3', productName: 'Caftan Brodé',
-              productImage: '👗', price: 35000, quantity: 1),
-        ],
-        status: OrderStatus.shipped,
-        subtotal: 35000,
-        deliveryFee: 3500,
-        total: 38500,
-        deliveryZone: 'Yamoussoukro',
-        deliveryAddress: 'Quartier Millionnaire',
-        paymentMethod: 'Wave',
-        paymentPhone: '+225 01 55 66 77 88',
-        transactionId: 'WV-2025-DEF456',
-        createdAt: now.subtract(const Duration(days: 2)),
-        estimatedDelivery: now.add(const Duration(days: 1)),
-        statusHistory: [
-          OrderStatusUpdate(status: OrderStatus.pending, timestamp: now.subtract(const Duration(days: 2))),
-          OrderStatusUpdate(status: OrderStatus.preparing, timestamp: now.subtract(const Duration(days: 1, hours: 12))),
-          OrderStatusUpdate(status: OrderStatus.shipped, timestamp: now.subtract(const Duration(hours: 10))),
-        ],
-      ),
-      Order(
-        id: 'CMD-2025-0031',
-        userId: 'u1',
-        items: [
-          const OrderItem(productId: 'p4', productName: 'Bijoux Perles',
-              productImage: '📿', price: 9800, quantity: 1),
-          const OrderItem(productId: 'p5', productName: 'Sac Raphia',
-              productImage: '👜', price: 15000, quantity: 1),
-        ],
-        status: OrderStatus.preparing,
-        subtotal: 24800,
-        deliveryFee: 2000,
-        total: 26800,
-        deliveryZone: 'Abidjan Nord',
-        deliveryAddress: 'Abobo, Derrière Rails',
-        paymentMethod: 'MTN MoMo',
-        paymentPhone: '+225 05 99 88 77 66',
-        transactionId: 'MTN-2025-GHI789',
-        createdAt: now.subtract(const Duration(hours: 5)),
-        estimatedDelivery: now.add(const Duration(days: 2)),
-        statusHistory: [
-          OrderStatusUpdate(status: OrderStatus.pending, timestamp: now.subtract(const Duration(hours: 5))),
-          OrderStatusUpdate(status: OrderStatus.preparing, timestamp: now.subtract(const Duration(hours: 3))),
-        ],
-      ),
-    ];
-  }
+  List<Order> _orders = [];
+  bool _isLoading = true;
+  String? _error;
 
   List<Order> _getByStatus(String filter) {
     if (filter == 'Tous') return _orders;
@@ -112,9 +33,22 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
     return _orders;
   }
 
+  Future<void> _loadOrders() async {
+    setState(() { _isLoading = true; _error = null; });
+    try {
+      final orders = await OrderService.getMyOrders();
+      if (mounted) setState(() { _orders = orders; _isLoading = false; });
+    } on ApiException catch (e) {
+      if (mounted) setState(() { _error = e.message; _isLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() { _error = 'Erreur réseau.'; _isLoading = false; });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    _loadOrders();
     _tabController = TabController(length: 4, vsync: this);
   }
 
@@ -145,19 +79,27 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen>
           ],
         ),
       ),
-      body: TabBarView(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF6200EE)))
+          : _error != null
+              ? ErrorStateWidget(message: _error!, onRetry: _loadOrders)
+              : TabBarView(
         controller: _tabController,
         children: ['Tous', 'En cours', 'Livrés', 'Annulés'].map((filter) {
           final orders = _getByStatus(filter);
           if (orders.isEmpty) return _buildEmpty(filter);
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: orders.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 12),
-            itemBuilder: (_, i) => _OrderCard(
-              order: orders[i],
-              onTrack: () => Navigator.pushNamed(context, AppRoutes.orderTracking,
-                  arguments: orders[i]),
+          return RefreshIndicator(
+            onRefresh: _loadOrders,
+            color: const Color(0xFF6200EE),
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: orders.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (_, i) => _OrderCard(
+                order: orders[i],
+                onTrack: () => Navigator.pushNamed(context, AppRoutes.orderTracking,
+                    arguments: orders[i]),
+              ),
             ),
           );
         }).toList(),
